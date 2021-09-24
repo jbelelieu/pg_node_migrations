@@ -227,7 +227,7 @@ async function doesTableExist(client: BasicPgClient, tableName: string, schemaNa
     SELECT 1
     FROM information_schema.tables
     WHERE table_schema = '${schemaName}'
-    AND table_name = '${tableName}';
+    AND table_name = '${tableName}'
   );`)
 
   return result.rows.length > 0 && result.rows[0].exists

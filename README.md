@@ -11,11 +11,13 @@ A PostgreSQL migration library inspired by the Stack Overflow system described i
 
 Migrations are defined in sequential SQL files, for example:
 
+**IMPORTANT: Start your migrations at 0_**
+
 ```text
 migrations
-├ 1_create-table.sql
-├ 2_alter-table.sql
-└ 3_add-index.sql
+├ 0_create-table.sql
+├ 1_alter-table.sql
+└ 2_add-index.sql
 ```
 
 Requires Node 10.17.0+
