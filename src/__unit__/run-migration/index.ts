@@ -42,10 +42,12 @@ function buildMigration(sql: string): Migration {
   }
 }
 const migrationTableName = "migrations"
+const migrationSchemaName = "public"
+// const options = { tableName: 'migrations', schemaName: 'public'};
 
 test("runs a simple migration", (t) => {
   const query = sinon.stub().resolves()
-  const run = runMigration(migrationTableName, {query})
+  const run = runMigration(migrationTableName, migrationSchemaName, {query})
 
   const migration = buildMigration(normalSqlFile)
 
@@ -75,7 +77,7 @@ test("runs a simple migration", (t) => {
 
 test("runs a simple js migration", (t) => {
   const query = sinon.stub().resolves()
-  const run = runMigration(migrationTableName, {query})
+  const run = runMigration(migrationTableName, migrationSchemaName, {query})
 
   const migration = buildMigration(normalJsFile)
 
@@ -105,7 +107,7 @@ test("runs a simple js migration", (t) => {
 
 test("rolls back when there is an error inside a transactiony migration", async (t) => {
   const query = sinon.stub().rejects(new Error("There was a problem"))
-  const run = runMigration(migrationTableName, {query})
+  const run = runMigration(migrationTableName, migrationSchemaName, {query})
 
   const migration = buildMigration(normalSqlFile)
   t.plan(2)
@@ -121,7 +123,7 @@ test("rolls back when there is an error inside a transactiony migration", async 
 
 test("does not run the migration in a transaction when instructed", async (t) => {
   const query = sinon.stub().resolves()
-  const run = runMigration(migrationTableName, {query})
+  const run = runMigration(migrationTableName, migrationSchemaName, {query})
 
   const migration = buildMigration(noTransactionSqlFile)
 
@@ -140,7 +142,7 @@ test("does not run the migration in a transaction when instructed", async (t) =>
 
 test("does not roll back when there is an error inside a transactiony migration", async (t) => {
   const query = sinon.stub().rejects(new Error("There was a problem"))
-  const run = runMigration(migrationTableName, {query})
+  const run = runMigration(migrationTableName, migrationSchemaName, {query})
 
   const migration = buildMigration(noTransactionSqlFile)
 

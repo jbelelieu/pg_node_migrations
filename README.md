@@ -46,7 +46,13 @@ async function() {
     defaultDatabase: "postgres"
   }
 
-  await migrate(dbConfig, "path/to/migration/files")
+  // Optional. Defaults to "public" schema and "migrations" table
+  const optionalConfig = {
+    schemaName: 'myCustomSchema',
+    tableName: 'myCustomMigrationsTableName',
+  }
+
+  await migrate(dbConfig, "path/to/migration/files", optionalConfig)
 }
 ```
 
@@ -64,11 +70,17 @@ async function() {
     port: 5432,
   }
 
+  // Optional. Defaults to "public" schema and "migrations" table
+  const optionalConfig = {
+    schemaName: 'myCustomSchema',
+    tableName: 'myCustomMigrationsTableName',
+  }
+
   // Note: when passing a client, it is assumed that the database already exists
   const client = new pg.Client(dbConfig) // or a Pool, or a PoolClient
   await client.connect()
   try {
-    await migrate({client}, "path/to/migration/files")
+    await migrate({client}, "path/to/migration/files", optionalConfig)
   } finally {
     await client.end()
   }
