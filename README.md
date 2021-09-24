@@ -1,3 +1,5 @@
+This repo is based off of the work of Thom Wright's Postgres migrations library.
+
 # Postgres migrations
 
 ![GitHub Actions](https://github.com/ThomWright/postgres-migrations/actions/workflows/node.js.yml/badge.svg)
