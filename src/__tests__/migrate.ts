@@ -7,6 +7,10 @@ import {PASSWORD, startPostgres, stopPostgres} from "./fixtures/docker-postgres"
 
 const CONTAINER_NAME = "pg-migrations-test-migrate"
 
+const OPTIONS = {
+  schemaName: 'public',
+};
+
 let port: number
 
 process.on("uncaughtException", function (err) {
@@ -33,15 +37,15 @@ test("concurrent migrations", async (t) => {
 
   await createDb(databaseName, dbConfig)
 
-  await migrate(dbConfig, "src/__tests__/fixtures/concurrent")
+  await migrate(dbConfig, "src/__tests__/fixtures/concurrent", OPTIONS)
 
   // should deadlock if running concurrently
   await Promise.all([
-    migrate(dbConfig, "src/__tests__/fixtures/concurrent-2"),
-    migrate(dbConfig, "src/__tests__/fixtures/concurrent-2"),
+    migrate(dbConfig, "src/__tests__/fixtures/concurrent-2", OPTIONS),
+    migrate(dbConfig, "src/__tests__/fixtures/concurrent-2", OPTIONS),
   ])
 
-  const exists = await doesTableExist(dbConfig, "concurrent")
+  const exists = await doesTableExist(dbConfig, "concurrent", "public")
   t.truthy(exists)
 })
 
@@ -58,20 +62,22 @@ test("concurrent migrations - index concurrently", async (t) => {
 
   await createDb(databaseName, dbConfig)
 
-  await migrate(dbConfig, "src/__tests__/fixtures/concurrent")
+  await migrate(dbConfig, "src/__tests__/fixtures/concurrent", OPTIONS)
 
   // will deadlock if one process has the advisory lock and tries to index concurrently
   // while the other waits for the advisory lock
   await Promise.all([
     migrate(dbConfig, "src/__tests__/fixtures/concurrent-index-2", {
+      ...OPTIONS, 
       logger: (msg) => console.log("A", msg),
     }),
     migrate(dbConfig, "src/__tests__/fixtures/concurrent-index-2", {
+      ...OPTIONS,
       logger: (msg) => console.log("B", msg),
     }),
   ])
 
-  const exists = await doesTableExist(dbConfig, "concurrent")
+  const exists = await doesTableExist(dbConfig, "concurrent", "public")
   t.truthy(exists)
 })
 
@@ -106,7 +112,7 @@ test("with connected client", async (t) => {
 
       await migrate({client}, "src/__tests__/fixtures/success-first")
 
-      const exists = await doesTableExist(dbConfig, "success")
+      const exists = await doesTableExist(dbConfig, "success", "public")
       t.truthy(exists)
     } finally {
       await client.end()
@@ -143,7 +149,7 @@ test("with pool", async (t) => {
 
     await migrate({client: pool}, "src/__tests__/fixtures/success-first")
 
-    const exists = await doesTableExist(dbConfig, "success")
+    const exists = await doesTableExist(dbConfig, "success", "public")
     t.truthy(exists)
   } finally {
     await pool.end()
@@ -180,7 +186,7 @@ test("with pool client", async (t) => {
     try {
       await migrate({client}, "src/__tests__/fixtures/success-first")
 
-      const exists = await doesTableExist(dbConfig, "success")
+      const exists = await doesTableExist(dbConfig, "success", "public")
       t.truthy(exists)
     } finally {
       client.release()
@@ -202,7 +208,7 @@ test("successful first migration", (t) => {
 
   return createDb(databaseName, dbConfig)
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/success-first"))
-    .then(() => doesTableExist(dbConfig, "success"))
+    .then(() => doesTableExist(dbConfig, "success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -221,7 +227,7 @@ test("successful second migration", (t) => {
   return createDb(databaseName, dbConfig)
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/success-first"))
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/success-second"))
-    .then(() => doesTableExist(dbConfig, "more_success"))
+    .then(() => doesTableExist(dbConfig, "more_success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -239,7 +245,7 @@ test("successful first javascript migration", (t) => {
 
   return createDb(databaseName, dbConfig)
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/success-js-first"))
-    .then(() => doesTableExist(dbConfig, "success"))
+    .then(() => doesTableExist(dbConfig, "success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -260,7 +266,7 @@ test("successful second mixed js and sql migration", (t) => {
     .then(() =>
       migrate(dbConfig, "src/__tests__/fixtures/success-second-mixed-js-sql"),
     )
-    .then(() => doesTableExist(dbConfig, "more_success"))
+    .then(() => doesTableExist(dbConfig, "more_success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -278,7 +284,7 @@ test("successful complex js migration", (t) => {
 
   return createDb(databaseName, dbConfig)
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/success-complex-js"))
-    .then(() => doesTableExist(dbConfig, "complex"))
+    .then(() => doesTableExist(dbConfig, "complex", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -419,7 +425,7 @@ test("no database - ensureDatabaseExists = true", (t) => {
   }
 
   return migrate(dbConfig, "src/__tests__/fixtures/ensure-exists")
-    .then(() => doesTableExist(dbConfig, "success"))
+    .then(() => doesTableExist(dbConfig, "success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -439,7 +445,7 @@ test("existing database - ensureDatabaseExists = true", (t) => {
 
   return createDb(databaseName, dbConfig)
     .then(() => migrate(dbConfig, "src/__tests__/fixtures/ensure-exists"))
-    .then(() => doesTableExist(dbConfig, "success"))
+    .then(() => doesTableExist(dbConfig, "success", "public"))
     .then((exists) => {
       t.truthy(exists)
     })
@@ -679,7 +685,7 @@ test("rollback", (t) => {
       t.regex(err.message, /Rolled back/)
       t.regex(err.message, /trigger-rollback/)
     })
-    .then(() => doesTableExist(dbConfig, "should_get_rolled_back"))
+    .then(() => doesTableExist(dbConfig, "should_get_rolled_back", "public"))
     .then((exists) => {
       t.false(
         exists,
@@ -688,7 +694,7 @@ test("rollback", (t) => {
     })
 })
 
-function doesTableExist(dbConfig: pg.ClientConfig, tableName: string) {
+function doesTableExist(dbConfig: pg.ClientConfig, tableName: string, schemaName: string) {
   const client = new pg.Client(dbConfig)
   client.on("error", (err) => console.log("doesTableExist on error", err))
   return client
@@ -697,9 +703,9 @@ function doesTableExist(dbConfig: pg.ClientConfig, tableName: string) {
       client.query(SQL`
         SELECT EXISTS (
           SELECT 1
-          FROM   pg_catalog.pg_class c
-          WHERE  c.relname = ${tableName}
-          AND    c.relkind = 'r'
+          FROM information_schema.tables
+          WHERE table_schema = '${schemaName}'
+          AND table_name = '${tableName}';
         );
       `),
     )

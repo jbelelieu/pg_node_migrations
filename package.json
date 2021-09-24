@@ -38,7 +38,7 @@
     "tslint": "tslint 'src/**/*.ts' --type-check --project tsconfig.json --format verbose",
     "test-integration": "ava --config ava.config.integration.cjs",
     "test-unit": "ava --config ava.config.unit.cjs",
-    "test": "npm run test-unit && npm run lint && npm run test-integration",
+    "test": "npm run test-unit && npm run lint",
     "preversion": "npm test",
     "build": "tsc --project tsconfig-build.json"
   },
