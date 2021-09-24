@@ -31,7 +31,7 @@ There are two ways to use the API.
 Either, pass a database connection config object:
 
 ```typescript
-import {migrate} from "postgres-migrations"
+import {migrate} from "pg-node-migrations"
 
 async function() {
   const dbConfig = {
@@ -63,7 +63,7 @@ async function() {
 Or, pass a `pg` client:
 
 ```typescript
-import {migrate} from "postgres-migrations"
+import {migrate} from "pg-node-migrations"
 
 async function() {
   const dbConfig = {
