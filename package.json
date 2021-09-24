@@ -1,6 +1,6 @@
 {
   "name": "pg-node-migrations",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Based on the work on ThomWright's postgres migration package. Adds the ability to specify a schema and table name.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,7 +40,7 @@
     "test-unit": "ava --config ava.config.unit.cjs",
     "test": "npm run test-unit && npm run lint",
     "preversion": "npm test",
-    "build": "tsc --project tsconfig-build.json && copyfiles ./src/migrations/*.sql ./dist/migrations"
+    "build": "tsc --project tsconfig-build.json"
   },
   "husky": {
     "hooks": {
@@ -58,7 +58,6 @@
     "@types/pg": "^8.6.0",
     "@types/sinon": "^9.0.11",
     "ava": "^3.15.0",
-    "copyfiles": "^2.4.1",
     "fit-commit-js": "^0.3.2",
     "husky": "^3.1.0",
     "prettier": "^2.3.1",
