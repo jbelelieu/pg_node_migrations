@@ -116,8 +116,6 @@ export async function migrate(
 function runMigrations(intendedMigrations: Array<Migration>, log: Logger, options: Options) {
   return async (client: BasicPgClient) => {
     try {
-
-
       log(`Starting migrations against schema ${options.schemaName}`)
 
       const appliedMigrations = await fetchAppliedMigrationFromDB(
@@ -177,13 +175,13 @@ async function fetchAppliedMigrationFromDB(
     )
 
     const {rows} = await client.query(
-      `SELECT * FROM "${migrationSchemaName}"."${migrationTableName}" ORDER BY id`,
+      `SELECT * FROM ${migrationSchemaName}.${migrationTableName} ORDER BY id`,
     )
     
     appliedMigrations = rows
   } else {
     await client.query(`
-        CREATE TABLE IF NOT EXISTS "${migrationSchemaName}"."${migrationTableName}" (
+        CREATE TABLE IF NOT EXISTS ${migrationSchemaName}.${migrationTableName} (
           id integer PRIMARY KEY,
           name varchar(100) UNIQUE NOT NULL,
           hash varchar(40) NOT NULL, -- sha1 hex encoded hash of the file name and contents, to ensure it hasn't been altered since applying the migration
@@ -226,8 +224,8 @@ async function doesTableExist(client: BasicPgClient, tableName: string, schemaNa
   const result = await client.query(SQL`SELECT EXISTS (
     SELECT 1
     FROM information_schema.tables
-    WHERE table_schema = '${schemaName}'
-    AND table_name = '${tableName}'
+    WHERE table_schema = ${schemaName}
+    AND table_name = ${tableName}
   );`)
 
   return result.rows.length > 0 && result.rows[0].exists
