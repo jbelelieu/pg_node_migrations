@@ -48,7 +48,7 @@ export const loadMigrationFile = async (filePath: string) => {
       hash,
       sql,
     }
-  } catch (err) {
+  } catch (err: any) {
     throw new Error(`${err.message} - Offending file: '${fileName}'.`)
   }
 }

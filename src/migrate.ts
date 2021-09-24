@@ -51,6 +51,7 @@ export async function migrate(
   if (typeof migrationsDirectory !== "string") {
     throw new Error("Must pass migrations directory as a string")
   }
+  
   const intendedMigrations = await loadMigrationFiles(migrationsDirectory, log)
 
   if ("client" in dbConfig) {
@@ -115,6 +116,8 @@ export async function migrate(
 function runMigrations(intendedMigrations: Array<Migration>, log: Logger, options: Options) {
   return async (client: BasicPgClient) => {
     try {
+
+
       log(`Starting migrations against schema ${options.schemaName}`)
 
       const appliedMigrations = await fetchAppliedMigrationFromDB(
@@ -179,8 +182,16 @@ async function fetchAppliedMigrationFromDB(
     
     appliedMigrations = rows
   } else {
-    log(`Migrations table with name '${migrationSchemaName}.${migrationTableName}' hasn't been created,
-  so the database is new and we need to run all migrations.`)
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS "${migrationSchemaName}"."${migrationTableName}" (
+          id integer PRIMARY KEY,
+          name varchar(100) UNIQUE NOT NULL,
+          hash varchar(40) NOT NULL, -- sha1 hex encoded hash of the file name and contents, to ensure it hasn't been altered since applying the migration
+          executed_at timestamp DEFAULT current_timestamp
+        );
+    `);
+
+    log(`Migrations table with name '${migrationSchemaName}.${migrationTableName}' has been created!`)
   }
   
   return appliedMigrations
