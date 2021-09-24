@@ -32,7 +32,7 @@ export const loadMigrationFiles = async (
   }
 
   const migrationFiles = [
-    path.join(__dirname, "./0_create-migrations-table.sql"),
+    path.join(__dirname, "./migrations/0_create-migrations-table.sql"),
     ...fileNames.map((fileName) => path.resolve(directory, fileName)),
   ].filter(isValidFile)
 
