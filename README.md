@@ -1,4 +1,4 @@
-This repo is based off of the work of Thom Wright's Postgres migrations library. The only differences are:
+This repo is based off of the work of [Thom Wright's Postgres migrations library](https://github.com/ThomWright/postgres-migrations). The only differences are:
 1. You can specify a migration table name,
 2. You can specify a schema to run the migrations against.
 
